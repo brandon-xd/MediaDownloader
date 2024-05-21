@@ -2,39 +2,29 @@
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Diagnostics;
-using System;
 using System.Configuration;
 using System.Xml;
 using System.IO;
 using System.ComponentModel;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using System.Net.Mail;
-using System.CodeDom.Compiler;
 
 namespace MediaDownloader
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
+
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         public string userDirectory { get; set; }
         public string mediaLink { get; set; }
-   
         public string format { get; set; }
+        public Boolean audioOnly { get; set; }
         public string audioFormat { get; set; }
-
         private Process process;
-
         private ProgressBar downloadBar;
-
         public string quality { get; set; }
-
         public string fileName { get; set; }
         public string defaultFileMessage { get; set; }
 
-        // Implement PropertyChanged event
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected virtual void OnPropertyChanged(string propertyName)
@@ -47,13 +37,14 @@ namespace MediaDownloader
             InitializeComponent();
             downloadBar = DownloadBar;
             mediaLink = "";
-            defaultFileMessage = "<-- Change Default File Name -->";
             UserLink.TextChanged += UserLink_TextChanged_1;
-            FocusManager.SetFocusedElement(this, OutputFile);
+// FocusManager.SetFocusedElement(this, OutputFile);
             FocusManager.SetFocusedElement(this, this);
             ReadSettings();
             DataContext = this;
 
+           // AudioOnly.Checked += AudioOnly_Checked;
+            //AudioOnly.Unchecked += AudioOnly_Unchecked;
         }
         private string GetConfigFilePath()
         {
@@ -232,7 +223,7 @@ namespace MediaDownloader
         {
             if (pref == "Light")
             {
-                backbox.Style = (Style)FindResource("DefaultGridStyle");
+                backbox.Style = (Style)FindResource("DefaultCanvasStyle");
                 foreach (var child in backbox.Children)
                 {
                     if (child is TextBox textBox)
@@ -260,7 +251,7 @@ namespace MediaDownloader
 
             else
             {
-                backbox.Style = (Style)FindResource("DarkGridStyle");
+                backbox.Style = (Style)FindResource("DarkCanvasStyle");
                 foreach (var child in backbox.Children)
                 {
                     if (child is TextBox textBox)
@@ -426,13 +417,13 @@ namespace MediaDownloader
         {
             if (string.IsNullOrWhiteSpace(mediaLink) || string.IsNullOrWhiteSpace(userDirectory))
             {
-                MessageBox.Show("Please enter a valid YouTube URL and select a download directory.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                ShowMessage("Please enter a valid URL and select a download directory.");
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(format) || string.IsNullOrWhiteSpace(quality))
             {
-                MessageBox.Show("Please select a video format and quality.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                ShowMessage("Please select a video format and quality.");
                 return;
             }
 
@@ -443,40 +434,29 @@ namespace MediaDownloader
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                ShowMessage($"An error occurred: {ex.Message}");
             }
         }
 
         private async Task downloadVideo(string link, string directory, string format, ProgressBar progressBar)
         {
-            if(this.fileName == defaultFileMessage)
-            {
-                this.fileName = "%(title)s";
-            }
-            else
-            {
-                if (!verifyFileName(this.fileName))
-                {
-                    MessageBox.Show($"Invalid file name format.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
-            }
-            
+            string arguments;
             try
             {
+                if (!audioOnly)
+                {
                 Trace.WriteLine($"Downloading video from {link} to {directory} in {format} format at {quality} quality.");
-
-                // Download thumbnail first
-                RunYTDLProcess( $"{link}  --write-thumbnail --skip-download -o \"thumbnail.%(ext)s\" ", progressBar);
-
-                string myfile = "./thumbnail.webp";
-                FileInfo f = new FileInfo(myfile);
-                f.MoveTo(Path.ChangeExtension(myfile, ".Jpeg"));
-
-                File.Move("thumbnail.webp", "thumbnail.jpeg");
-
+                    arguments = $"-f \"bestvideo+bestaudio/best\" -o \"{directory}\\%(title)s.%(ext)s\" {link}";
+                    await RunYTDLProcess(arguments, progressBar);
+                    Trace.WriteLine("Process complete.");
+                    return;
+                }
+                
+                
+                // arguments = $"-f \"bestvideo[height<={quality}]+bestaudio/best[ext={format}]\" -o \"{directory}\\{fileName}.%(ext)s\" {link}";
+                Trace.WriteLine($"Downloading audio from {link} to {directory} in {audioFormat} format.");
                 // TODO: Add audio format options (bestaudio[ext={audioQuality}, include m4a as a audio format option (possibly as default), add command for backup ba+bv/b 
-                string arguments = $"-f \"bestvideo[height<={quality}]+bestaudio/best[ext={format}]\" -o \"{directory}\\{fileName}.%(ext)s\" {link}";
+                arguments = $"-f \"bestvideo[height<={quality}]+bestaudio/best[ext={format}]\" -o \"{directory}\\{fileName}.%(ext)s\" {link}";
                 await RunYTDLProcess(arguments, progressBar);
                 
             }
@@ -510,7 +490,7 @@ namespace MediaDownloader
                     process.ErrorDataReceived += (s, args) => UpdateProgress(args.Data);
 
                     // TODO: instead of MessageBox, we should add an area maybe at the bottom of the application window that displays alerts (less annoying this way)
-                    MessageBox.Show("Download initiated!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ShowMessage("Download initiated!");
                     process.Start();
                     process.BeginOutputReadLine();
                     process.BeginErrorReadLine();
@@ -572,5 +552,28 @@ namespace MediaDownloader
                 return true;
             }
         }
+
+        private void AudioOnly_Checked(object sender, RoutedEventArgs e)
+        {
+            audioOnly = true;
+            AudioFormat.IsEnabled = true;
+            OnPropertyChanged(nameof(audioOnly));
+            OnPropertyChanged(nameof(AudioFormat.IsEnabled));
+        }
+
+        // handle the Unchecked event for the AudioOnly checkbox
+        private void AudioOnly_Unchecked(object sender, RoutedEventArgs e)
+        {
+            audioOnly = false;
+            AudioFormat.IsEnabled = false;
+            OnPropertyChanged(nameof(audioOnly));
+            OnPropertyChanged(nameof(AudioFormat.IsEnabled));
+        }
+
+        private void ShowMessage(string message)
+        {
+            AlertMessage.Content = message;
+        }
+
     }
 }
