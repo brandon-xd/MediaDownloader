@@ -32,12 +32,48 @@
                 <Setter Property="Foreground" Value="#a7a7a7" />
             </Style>
             
+            <!--Check Box-->
+            <Style x:Key="DefaultCheckBoxStyle" TargetType="CheckBox">
+                <Setter Property="Background" Value="White" />
+                <Setter Property="Foreground" Value="Black" />
+            </Style>
+            <Style x:Key="DarkCheckBoxStyle" TargetType="CheckBox">
+                <Setter Property="Background" Value="#0d1117" />
+                <Setter Property="Foreground" Value="#a7a7a7" />
+                <!--change bullet color-->
+
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="CheckBox">
+                            <BulletDecorator Background="Transparent">
+                                <BulletDecorator.Bullet>
+                                    <Grid Width="13" Height="13">
+                                        <Ellipse x:Name="Border" Width="13" Height="13" Fill="#272c33" Stroke="#272c33" StrokeThickness="1"/>
+                                        <Path x:Name="CheckMark" Stroke="#79829b" StrokeThickness="2" Data="M 1,1 L 12,12 M 1,12 L 12,1" Visibility="Collapsed"/>
+                                    </Grid>
+                                </BulletDecorator.Bullet>
+                                <ContentPresenter Margin="4,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" RecognizesAccessKey="True"/>
+                            </BulletDecorator>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Border" Property="Fill" Value="#272c33"/>
+                                    <Setter TargetName="Border" Property="Stroke" Value="#79829b"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
             <!--TextBox-->
             <Style x:Key="DefaultTextBoxStyle" TargetType="TextBox">
                 <Setter Property="Background" Value="#FFE6E6E6" />
                 <Setter Property="Foreground" Value="Black" />
             </Style>
-            
+
             <Style x:Key="DarkTextBoxStyle" TargetType="TextBox">
                 <Setter Property="Background" Value="#151b22" />
                 <Setter Property="Foreground" Value="#79829b" />

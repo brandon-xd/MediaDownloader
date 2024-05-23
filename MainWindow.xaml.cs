@@ -17,7 +17,7 @@ namespace MediaDownloader
         public string userDirectory { get; set; }
         public string mediaLink { get; set; }
         public string format { get; set; }
-        public Boolean audioOnly { get; set; }
+        public bool audioOnly { get; set; }
         public string audioFormat { get; set; }
         private Process process;
         private ProgressBar downloadBar;
@@ -38,13 +38,13 @@ namespace MediaDownloader
             downloadBar = DownloadBar;
             mediaLink = "";
             UserLink.TextChanged += UserLink_TextChanged_1;
-// FocusManager.SetFocusedElement(this, OutputFile);
+            // FocusManager.SetFocusedElement(this, OutputFile);
             FocusManager.SetFocusedElement(this, this);
             ReadSettings();
             DataContext = this;
 
-           // AudioOnly.Checked += AudioOnly_Checked;
-            //AudioOnly.Unchecked += AudioOnly_Unchecked;
+            AudioOnlyCheckbox.Checked += AudioOnly_Checked;
+            AudioOnlyCheckbox.Unchecked += AudioOnly_Unchecked;
         }
         private string GetConfigFilePath()
         {
@@ -62,9 +62,9 @@ namespace MediaDownloader
                     sw.WriteLine("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
                     sw.WriteLine("<Configuration>");
                     sw.WriteLine("  <Theme>Dark</Theme>");
-                    sw.WriteLine("  <Quality>720</Quality>");
-                    sw.WriteLine("  <Video>mp4</Video>");
-                    sw.WriteLine("  <Audio>mp3</Audio>");
+                    sw.WriteLine("  <Quality>Best</Quality>");
+                    sw.WriteLine("  <Video>Best</Video>");
+                    sw.WriteLine("  <Audio>Best</Audio>");
                     sw.WriteLine("  <UserDirectory></UserDirectory>");
                     sw.WriteLine("  <FileName></FileName>");
                     sw.WriteLine("</Configuration>");
@@ -95,37 +95,37 @@ namespace MediaDownloader
                 }
 
                 configNode = doc.SelectSingleNode("//Quality");
-                if (configNode != null) 
+                if (configNode != null)
                 {
                     this.quality = configNode.InnerText;
-                    VidQuality.SelectedIndex = VidQuality_Index(quality);
+                    VidQuality.SelectedItem = VidQuality.Items.Cast<ComboBoxItem>().FirstOrDefault(item => (string)item.Content == quality);
                 }
 
                 configNode = doc.SelectSingleNode("//Video");
                 if (configNode != null)
                 {
                     this.format = configNode.InnerText;
-                    VidFormat.SelectedIndex = VidFormat_Index(format);
+                    VidFormat.SelectedItem = VidFormat.Items.Cast<ComboBoxItem>().FirstOrDefault(item => (string)item.Content == format);
                 }
 
                 configNode = doc.SelectSingleNode("//Audio");
                 if (configNode != null)
                 {
                     this.audioFormat = configNode.InnerText;
-                    AudioFormat.SelectedIndex = AudioFormat_Index(audioFormat);
-                }
+                    AudioFormat.SelectedItem = AudioFormat.Items.Cast<ComboBoxItem>().FirstOrDefault(item => (string)item.Content == audioFormat);
 
-                configNode = doc.SelectSingleNode("//UserDirectory");
-                if (configNode != null)
-                {
-                    this.userDirectory = configNode.InnerText;
-                    UserDir.Text = userDirectory;
+                    configNode = doc.SelectSingleNode("//UserDirectory");
+                    if (configNode != null)
+                    {
+                        this.userDirectory = configNode.InnerText;
+                        UserDir.Text = userDirectory;
+                    }
                 }
-                
             }
             catch (ConfigurationErrorsException)
             {
                 Console.WriteLine("Error reading user config");
+                Trace.WriteLine("Error reading user config");
             }
 
         }
@@ -246,6 +246,11 @@ namespace MediaDownloader
                     {
                         progressBar.Style = (Style)FindResource("DefaultMedia");
                     }
+                    else if (child is CheckBox checkBox)
+                    {
+                        checkBox.Style = (Style)FindResource("DefaultCheckBoxStyle");
+                    
+                    }
                 }
             }
 
@@ -274,6 +279,10 @@ namespace MediaDownloader
                     else if(child is ProgressBar progressBar)
                     {
                         progressBar.Style = (Style)FindResource("DarkMedia");
+                    }
+                    else if (child is CheckBox checkBox)
+                    {
+                        checkBox.Style = (Style)FindResource("DarkCheckBoxStyle");
                     }
                 }
             }
@@ -314,11 +323,11 @@ namespace MediaDownloader
 
         private int VidQuality_Index(string value)
         {
-            if(value == "360")
+            if(value == "Best")
                 return 0;
-            else if(value == "480")
+            else if(value == "1440")
                 return 1;
-            else if(value == "720")
+            else if(value == "1080")
                 return 2;
             else
                 return 3;
@@ -326,8 +335,8 @@ namespace MediaDownloader
         private void VidQuality_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             string configFile = GetConfigFilePath();
-            var item = (ComboBoxItem)VidQuality.SelectedValue;
-            quality = (string)item.Content;
+            var item = (ComboBoxItem)VidQuality.SelectedItem;
+            quality = item.Content.ToString();
 
             try
             {
@@ -346,22 +355,13 @@ namespace MediaDownloader
             }
         }
 
-        private int VidFormat_Index(string value)
-        {
-            if (value == "webm")
-                return 0;
-            else if(value == "mp4")
-                return 1;
-            else if(value == "mov")
-                return 2;
-            else
-                return 3;
-        }
+     
         private void VidFormat_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             string configFile = GetConfigFilePath();
-            var item = (ComboBoxItem)VidFormat.SelectedValue;
-            format = (string)item.Content;
+            var item = (ComboBoxItem)VidFormat.SelectedItem;
+            format = item.Content.ToString();
+
             try
             {
                 XmlDocument doc = new XmlDocument();
@@ -379,22 +379,12 @@ namespace MediaDownloader
             }
         }
 
-        private int AudioFormat_Index(string value)
-        {
-            if (value == "mp3")
-                return 0;
-            else if( value == "wav")
-                return 1;
-            else if(value == "flac")
-                return 2;
-            else
-                return 3;
-        }
         private void AudioFormat_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             string configFile = GetConfigFilePath();
-            var item = (ComboBoxItem)AudioFormat.SelectedValue;
-            audioFormat = (string)item.Content;
+            var item = (ComboBoxItem)AudioFormat.SelectedItem;
+            audioFormat = item.Content.ToString();
+
             try
             {
                 XmlDocument doc = new XmlDocument();
@@ -410,7 +400,6 @@ namespace MediaDownloader
             {
                 Console.WriteLine("Error writing config file: " + ex.Message);
             }
-
         }
 
         private async void DLButton_Click(object sender, RoutedEventArgs e)
@@ -443,21 +432,31 @@ namespace MediaDownloader
             string arguments;
             try
             {
-                if (!audioOnly)
+                if (audioOnly)
                 {
-                Trace.WriteLine($"Downloading video from {link} to {directory} in {format} format at {quality} quality.");
-                    arguments = $"-f \"bestvideo+bestaudio/best\" -o \"{directory}\\%(title)s.%(ext)s\" {link}";
+                    Trace.WriteLine($"Downloading Audio only from {link} to {directory} in {audioFormat} format.");
+                    arguments = $"-f \"ba[ext={audioFormat}]/ba\" -o \"{directory}\\%(title)s.%(ext)s\" {link}";
+                    await RunYTDLProcess(arguments, progressBar);
+                    Trace.WriteLine("Process complete.");
+                    return;
+                }
+
+                if (quality == "Best" && format == "Best")
+                {
+                    Trace.WriteLine($"Downloading best video and audio from {link} to {directory} in {format} format.");
+                    arguments = $"-f \"bv*+ba/b\" -o \"{directory}\\%(title)s.%(ext)s\" {link}";
                     await RunYTDLProcess(arguments, progressBar);
                     Trace.WriteLine("Process complete.");
                     return;
                 }
                 
-                
+
                 // arguments = $"-f \"bestvideo[height<={quality}]+bestaudio/best[ext={format}]\" -o \"{directory}\\{fileName}.%(ext)s\" {link}";
                 Trace.WriteLine($"Downloading audio from {link} to {directory} in {audioFormat} format.");
                 // TODO: Add audio format options (bestaudio[ext={audioQuality}, include m4a as a audio format option (possibly as default), add command for backup ba+bv/b 
-                arguments = $"-f \"bestvideo[height<={quality}]+bestaudio/best[ext={format}]\" -o \"{directory}\\{fileName}.%(ext)s\" {link}";
+                arguments = $"-f \"bestvideo[height<={quality}][ext={format}]+bestaudio/best\" -o \"{directory}\\%(title)s.%(ext)s\" {link}";
                 await RunYTDLProcess(arguments, progressBar);
+                return;
                 
             }
             catch (Exception ex)
@@ -489,17 +488,24 @@ namespace MediaDownloader
                     process.OutputDataReceived += (s, args) => UpdateProgress(args.Data);
                     process.ErrorDataReceived += (s, args) => UpdateProgress(args.Data);
 
-                    // TODO: instead of MessageBox, we should add an area maybe at the bottom of the application window that displays alerts (less annoying this way)
                     ShowMessage("Download initiated!");
                     process.Start();
                     process.BeginOutputReadLine();
                     process.BeginErrorReadLine();
-
-                    process.Exited += (s, args) => HandleProcessExit();
-
+                    Trace.WriteLine("we are here maybe 0 ?");
+                    process.Exited += (s, args) =>
+                    {
+                        outputReadTaskCompletionSource.TrySetResult(true); // Signal the task completion when process exits
+                        HandleProcessExit();
+                    };
+                    Trace.WriteLine("we are here maybe 1 ?");
                     await outputReadTaskCompletionSource.Task;
-
+                    Trace.WriteLine("we are here maybe 2 ?");
+                    return;
                     process.WaitForExit();
+
+                    //TO DO ALL OF THIS HERE!!!!!! 5/21/2024
+
                 }
             }
             catch (Exception ex)

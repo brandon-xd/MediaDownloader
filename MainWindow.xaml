@@ -5,9 +5,26 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MediaDownloader"
         mc:Ignorable="d"
-        Title="Media Downloader" Height="427" Width="550" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen">
-    <Canvas x:Name="backbox" Margin="0,-19,0,-19">
-        <TextBlock Text="Paste the link of a video/playlist here:" TextWrapping="Wrap" x:Name="UserPrompt" HorizontalAlignment="Left" Canvas.Left="40" Canvas.Top="34" VerticalAlignment="Top" Height="17" Width="203"/>
+        Title="Media Downloader" Height="470" Width="550" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <Style x:Key="RoundedButtonStyle" TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="15">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Canvas x:Name="backbox" Margin="0,0,0,0">
+        <TextBlock Text="Paste the link of a video/playlist here:" TextWrapping="Wrap" x:Name="UserPrompt" HorizontalAlignment="Center" Canvas.Left="35" Canvas.Top="34" VerticalAlignment="Top" Height="17" Width="203"/>
         <Button Width="100" x:Name="DLButton" Height="21" Content="Download" Click="DLButton_Click" HorizontalAlignment="Left" Canvas.Left="409" Canvas.Top="56" VerticalAlignment="Top"/>
         <Image Width="350" Stretch="Uniform" Source="/placeholder.png" x:Name="PreviewThumbnail" Height="205" HorizontalAlignment="Left" Canvas.Left="35" Canvas.Top="108" VerticalAlignment="Top"/>
         <ProgressBar
@@ -25,7 +42,7 @@ Content="mp4"/>
 Content="mov"/>
         </ComboBox>
         <ComboBox
-Width="88" SelectionChanged="AudioFormat_SelectionChanged" x:Name="AudioFormat" IsEnabled="False" Cursor="Hand" HorizontalAlignment="Left" Canvas.Left="418" Canvas.Top="242" VerticalAlignment="Top" Height="23">
+Width="88" SelectionChanged="AudioFormat_SelectionChanged" x:Name="AudioFormat" IsEnabled="False" Cursor="Hand" HorizontalAlignment="Center" Canvas.Left="415" Canvas.Top="240" VerticalAlignment="Top" Height="23">
             <ComboBoxItem
 Content="Best"/>
             <ComboBoxItem
@@ -52,18 +69,21 @@ Content="720"/>
             <ComboBoxItem
 Content="480"/>
         </ComboBox>
-        <Button
-Width="100" x:Name="LightDarkMode" Content="Light/Dark" Click="LightDarkMode_Click" HorizontalAlignment="Left" Canvas.Left="412" Canvas.Top="284" VerticalAlignment="Top" Height="21"/>
+        <Button Width="22" x:Name="LightDarkMode" Click="LightDarkMode_Click" HorizontalAlignment="Left" Canvas.Left="487" Canvas.Top="21" VerticalAlignment="Top" Height="21" Style="{StaticResource RoundedButtonStyle}">
+            <Button.Content>
+                <Image Source="pack://application:,,,/MediaDownloader;component/dark-theme-icon.png" Stretch="Uniform"/>
+            </Button.Content>
+        </Button>
         <TextBlock
-Text="Save Location: " TextWrapping="Wrap" x:Name="YourDir" HorizontalAlignment="Left" Canvas.Left="40" Canvas.Top="85" VerticalAlignment="Top" Height="17" Width="81"/>
+Text="Save Location: " TextWrapping="Wrap" x:Name="YourDir" HorizontalAlignment="Left" Canvas.Left="35" Canvas.Top="85" VerticalAlignment="Center" Height="17" Width="81"/>
         <TextBlock
-Width="278" Text="Directory" TextWrapping="Wrap" x:Name="UserDir" HorizontalAlignment="Left" Canvas.Left="126" Canvas.Top="85" VerticalAlignment="Top" Height="17"/>
+Width="278" Text="Directory" TextWrapping="Wrap" x:Name="UserDir" HorizontalAlignment="Left" Canvas.Left="121" Canvas.Top="85" VerticalAlignment="Center" Height="17"/>
         <TextBlock
 Text="Video Options" TextWrapping="Wrap" RenderTransformOrigin="-0.162,-0.39" x:Name="VideoBlock" HorizontalAlignment="Left" Canvas.Left="419" Canvas.Top="120" VerticalAlignment="Top" Height="17" Width="79"/>
         <TextBox
-Width="364" TextWrapping="Wrap" TextChanged="UserLink_TextChanged_1" x:Name="UserLink" Height="21" HorizontalAlignment="Left" Canvas.Left="40" Canvas.Top="56" VerticalAlignment="Top"/>
+Width="364" TextWrapping="Wrap" TextChanged="UserLink_TextChanged_1" x:Name="UserLink" Height="21" HorizontalAlignment="Left" Canvas.Left="35" Canvas.Top="56" VerticalAlignment="Center"/>
         <CheckBox
-x:Name="Audio_Only_Checkbox" Content="Audio Only" Checked="AudioOnly_Checked" HorizontalAlignment="Left" Canvas.Left="418" Canvas.Top="216" VerticalAlignment="Top" Height="16" Width="82"/>
+x:Name="AudioOnlyCheckbox" Content="Audio Only" Checked="AudioOnly_Checked" HorizontalAlignment="Left" Canvas.Left="418" Canvas.Top="216" VerticalAlignment="Top" Height="16" Width="82"/>
 
 
 
